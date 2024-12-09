@@ -53,7 +53,7 @@ public class MQTTSourceTask extends SourceTask implements IMqttMessageListener {
 
                 @Override
                 public void deliveryComplete(IMqttDeliveryToken token) {
-                    log.info("MQTT Delivery Complete"+ token);
+                    log.info("MQTT Delivery Complete" + token);
                 }
             });
 
@@ -69,7 +69,7 @@ public class MQTTSourceTask extends SourceTask implements IMqttMessageListener {
             SourceRecord record = mqttSourceConverter.convert(topic, message);
             log.info(String.format("ATOM8 Converted record: %s, from source: %s", record, source));
             sourceRecordDeque.add(record);
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.error("Error on message received ", e);
         }
     }
