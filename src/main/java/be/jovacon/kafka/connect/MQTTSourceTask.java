@@ -1,8 +1,8 @@
 package be.jovacon.kafka.connect;
 
 import be.jovacon.kafka.connect.config.MQTTSourceConnectorConfig;
-import com.github.jcustenborder.kafka.connect.utils.data.SourceRecordDeque;
-import com.github.jcustenborder.kafka.connect.utils.data.SourceRecordDequeBuilder;
+import be.jovacon.kafka.connect.utils.SourceRecordDeque;
+import be.jovacon.kafka.connect.utils.SourceRecordDequeBuilder;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
