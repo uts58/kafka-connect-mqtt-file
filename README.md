@@ -50,18 +50,23 @@ If you see these entries, the connector has been installed succesfully
 
 ```
 {
-    "class": "org.ndsu.agda.connect.MQTTSinkConnector",
+    "class": "org.ndsu.agda.connect.connectors.mqtt.MQTTSinkConnector",
     "type": "sink",
     "version": "1.1.0"
 },
 {
-    "class": "org.ndsu.agda.connect.MQTTSourceConnector",
+    "class": "org.ndsu.agda.connect.connectors.mqtt.MQTTSourceConnector",
+    "type": "source",
+    "version": "1.1.0"
+},
+{
+    "class": "org.ndsu.agda.connect.connectors.mqtt.FileSinkConnector",
     "type": "source",
     "version": "1.1.0"
 }
 ```
 
-## Configuring the Source connector
+## Configuring the MQTT Source connector
 
 The MQTT Source connector subscribes to a Topic on a MQTT Broker and sends the messages to a Kafka topic.
 
@@ -73,7 +78,7 @@ curl -X POST \
   -d '{ "name": "mqtt-source-connector",
     "config":
     {
-      "connector.class":"org.ndsu.agda.connect.MQTTSourceConnector",
+      "connector.class":"org.ndsu.agda.connect.connectors.mqtt.MQTTSourceConnector",
       "mqtt.topic":"my_mqtt_topic",
       "kafka.topic":"my_kafka_topic",
       "mqtt.clientID":"my_client_id",
@@ -94,7 +99,7 @@ curl -X POST \
 * `mqtt.userName` (optional): Username to connect to MQTT broker
 * `mqtt.password` (optional): Password to connect to MQTT broker
 
-## Configuring the Sink connector
+## Configuring the MQTT Sink connector
 
 The MQTT Sink Connector reads messages from a Kafka topic and publishes them to a MQTT topic.
 
@@ -106,7 +111,7 @@ curl -X POST \
   -d '{ "name": "mqtt-sink-connector",
     "config":
     {
-      "connector.class":"org.ndsu.agda.connect.MQTTSinkConnector",
+      "connector.class":"org.ndsu.agda.connect.connectors.mqtt.MQTTSinkConnector",
       "mqtt.topic":"my_mqtt_topic",
       "topics":"my_kafka_topic",
       "mqtt.clientID":"my_client_id",
@@ -129,6 +134,33 @@ curl -X POST \
 * `mqtt.password` (optional): Password to connect to MQTT broker
 
 
+## Configuring the File Sink connector
+
+The File Sink Connector reads messages from a Kafka topic(s) and dumps them into files.
+
+Here is a basic configuration example:
+```
+curl -X POST \
+  http://<kafkaconnect>>:8083/connectors \
+  -H 'Content-Type: application/json' \
+  -d '{ "name": "mqtt-sink-connector",
+    "config":
+    {
+      "name": "file-sink-connector",
+      "config": {
+        "connector.class": "org.ndsu.agda.connect.connectors.file.FileSinkConnector",
+        "storage.directory": "/home/appuser",
+        "topics": "general-topic",
+        "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "key.converter.schemas.enable": "false",
+        "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "value.converter.schemas.enable": "false"
+      }
+    }
+}'
+```
+
 ## Authors
 
 * **Johan Vandevenne** - *Initial work* 
+* **Utsha Saha** - *Updates*

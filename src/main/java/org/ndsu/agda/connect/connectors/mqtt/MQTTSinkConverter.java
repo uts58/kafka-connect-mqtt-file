@@ -1,4 +1,4 @@
-package org.ndsu.agda.connect;
+package org.ndsu.agda.connect.connectors.mqtt;
 
 import org.ndsu.agda.connect.config.MQTTSinkConnectorConfig;
 import org.ndsu.agda.connect.config.MQTTSourceConnectorConfig;

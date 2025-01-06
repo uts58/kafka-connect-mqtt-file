@@ -1,5 +1,6 @@
-package org.ndsu.agda.connect;
+package org.ndsu.agda.connect.connectors.mqtt;
 
+import org.ndsu.agda.connect.Version;
 import org.ndsu.agda.connect.config.MQTTSinkConnectorConfig;
 import org.ndsu.agda.connect.config.MQTTSourceConnectorConfig;
 import org.apache.kafka.connect.errors.ConnectException;

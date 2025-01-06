@@ -4,7 +4,7 @@ curl -X POST \
   -d '{ "name": "mqtt-source-connector",
     "config":
     {
-      "connector.class":"org.ndsu.agda.connect.MQTTSourceConnector",
+      "connector.class":"org.ndsu.agda.connect.connectors.mqtt.MQTTSourceConnector",
       "mqtt.topic":"my_mqtt_topic",
       "kafka.topic":"my_kafka_topic",
       "mqtt.clientID":"my_client_id",
