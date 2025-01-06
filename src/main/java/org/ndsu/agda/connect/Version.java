@@ -1,6 +1,6 @@
 
 
-package be.jovacon.kafka.connect;
+package org.ndsu.agda.connect;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

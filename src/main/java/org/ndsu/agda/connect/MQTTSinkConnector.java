@@ -1,6 +1,6 @@
-package be.jovacon.kafka.connect;
+package org.ndsu.agda.connect;
 
-import be.jovacon.kafka.connect.config.MQTTSinkConnectorConfig;
+import org.ndsu.agda.connect.config.MQTTSinkConnectorConfig;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.connect.connector.Task;
 import org.apache.kafka.connect.sink.SinkConnector;
@@ -31,7 +31,6 @@ public class MQTTSinkConnector extends SinkConnector {
 
     @Override
     public List<Map<String, String>> taskConfigs(int maxTasks) {
-        log.debug("Enter taskconfigs");
         if (maxTasks > 1) {
             log.info("maxTasks is " + maxTasks + ". MaxTasks > 1 is not supported in this connector.");
         }

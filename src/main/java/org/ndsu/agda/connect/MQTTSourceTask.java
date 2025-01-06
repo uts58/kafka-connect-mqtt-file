@@ -1,8 +1,8 @@
-package be.jovacon.kafka.connect;
+package org.ndsu.agda.connect;
 
-import be.jovacon.kafka.connect.config.MQTTSourceConnectorConfig;
-import be.jovacon.kafka.connect.utils.SourceRecordDeque;
-import be.jovacon.kafka.connect.utils.SourceRecordDequeBuilder;
+import org.ndsu.agda.connect.config.MQTTSourceConnectorConfig;
+import org.ndsu.agda.connect.utils.SourceRecordDeque;
+import org.ndsu.agda.connect.utils.SourceRecordDequeBuilder;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;

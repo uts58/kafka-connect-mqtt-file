@@ -1,6 +1,6 @@
-package be.jovacon.kafka.connect;
+package org.ndsu.agda.connect;
 
-import be.jovacon.kafka.connect.config.MQTTSourceConnectorConfig;
+import org.ndsu.agda.connect.config.MQTTSourceConnectorConfig;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.connect.connector.Task;
 import org.apache.kafka.connect.source.SourceConnector;

@@ -1,7 +1,7 @@
-package be.jovacon.kafka.connect;
+package org.ndsu.agda.connect;
 
-import be.jovacon.kafka.connect.config.MQTTSinkConnectorConfig;
-import be.jovacon.kafka.connect.config.MQTTSourceConnectorConfig;
+import org.ndsu.agda.connect.config.MQTTSinkConnectorConfig;
+import org.ndsu.agda.connect.config.MQTTSourceConnectorConfig;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTask;

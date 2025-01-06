@@ -50,12 +50,12 @@ If you see these entries, the connector has been installed succesfully
 
 ```
 {
-    "class": "be.jovacon.kafka.connect.MQTTSinkConnector",
+    "class": "org.ndsu.agda.connect.MQTTSinkConnector",
     "type": "sink",
     "version": "1.1.0"
 },
 {
-    "class": "be.jovacon.kafka.connect.MQTTSourceConnector",
+    "class": "org.ndsu.agda.connect.MQTTSourceConnector",
     "type": "source",
     "version": "1.1.0"
 }
@@ -73,7 +73,7 @@ curl -X POST \
   -d '{ "name": "mqtt-source-connector",
     "config":
     {
-      "connector.class":"be.jovacon.kafka.connect.MQTTSourceConnector",
+      "connector.class":"org.ndsu.agda.connect.MQTTSourceConnector",
       "mqtt.topic":"my_mqtt_topic",
       "kafka.topic":"my_kafka_topic",
       "mqtt.clientID":"my_client_id",
@@ -106,7 +106,7 @@ curl -X POST \
   -d '{ "name": "mqtt-sink-connector",
     "config":
     {
-      "connector.class":"be.jovacon.kafka.connect.MQTTSinkConnector",
+      "connector.class":"org.ndsu.agda.connect.MQTTSinkConnector",
       "mqtt.topic":"my_mqtt_topic",
       "topics":"my_kafka_topic",
       "mqtt.clientID":"my_client_id",

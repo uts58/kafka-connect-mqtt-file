@@ -1,4 +1,4 @@
-package be.jovacon.kafka.connect.utils;
+package org.ndsu.agda.connect.utils;
 
 import org.apache.kafka.connect.source.SourceRecord;
 

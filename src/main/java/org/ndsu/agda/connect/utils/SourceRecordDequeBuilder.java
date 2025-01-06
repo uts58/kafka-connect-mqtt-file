@@ -1,4 +1,4 @@
-package be.jovacon.kafka.connect.utils;
+package org.ndsu.agda.connect.utils;
 
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.RateLimiter;
