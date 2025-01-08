@@ -16,14 +16,14 @@ public class MQTTSourceConverter {
 
     private MQTTSourceConnectorConfig mqttSourceConnectorConfig;
 
-    private Logger log = LoggerFactory.getLogger(MQTTSourceConverter.class);
+    private final Logger log = LoggerFactory.getLogger(MQTTSourceConverter.class);
 
     public MQTTSourceConverter(MQTTSourceConnectorConfig mqttSourceConnectorConfig) {
         this.mqttSourceConnectorConfig = mqttSourceConnectorConfig;
     }
 
     protected SourceRecord convert(String topic, MqttMessage mqttMessage) {
-        log.debug("Converting MQTT message: " + mqttMessage);
+        log.debug("Converting MQTT message: {}", mqttMessage);
 
         SourceRecord sourceRecord = new SourceRecord(
                 new HashMap<>(),
@@ -33,7 +33,7 @@ public class MQTTSourceConverter {
                 new String(mqttMessage.getPayload())
         );
 
-        log.debug("Converted MQTT Message: " + sourceRecord);
+        log.debug("Converted MQTT Message: {}", sourceRecord);
         return sourceRecord;
     }
 }

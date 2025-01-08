@@ -29,12 +29,12 @@ public class MQTTSourceConnector extends SourceConnector {
     public List<Map<String, String>> taskConfigs(int maxTasks) {
         log.debug("Enter taskconfigs");
         if (maxTasks > 1) {
-            log.info("maxTasks is " + maxTasks + ". MaxTasks > 1 is not supported in this connector.");
+            log.info("maxTasks is {}. MaxTasks > 1 is not supported in this connector.", maxTasks);
         }
         List<Map<String, String>> taskConfigs = new ArrayList<>(1);
         taskConfigs.add(new HashMap<>(configProps));
 
-        log.debug("Taskconfigs: " + taskConfigs);
+        log.debug("Taskconfigs: {}", taskConfigs);
         return taskConfigs;
     }
 

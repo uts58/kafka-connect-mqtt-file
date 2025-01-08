@@ -9,20 +9,22 @@ import org.ndsu.agda.connect.config.FileSInkConnectorConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Map;
 
 public class FileSinkTask extends SinkTask {
-    private Logger log = LoggerFactory.getLogger(FileSinkTask.class);
-    private FileSInkConnectorConfig config;
+    private final Logger log = LoggerFactory.getLogger(FileSinkTask.class);
     private String storageDirectory;
     private ObjectMapper objectMapper;
+    FileSinkJsonWriter writer;
+
 
     @Override
     public String version() {
@@ -31,9 +33,11 @@ public class FileSinkTask extends SinkTask {
 
     @Override
     public void start(Map<String, String> map) {
-        config = new FileSInkConnectorConfig(map);
-        this.storageDirectory = config.getString(FileSInkConnectorConfig.STORAGE_DIRECTORY);
+        this.storageDirectory = new FileSInkConnectorConfig(map)
+                .getString(FileSInkConnectorConfig.STORAGE_DIRECTORY);
         this.objectMapper = new ObjectMapper();
+        this.writer = new FileSinkJsonWriter();
+        writer.startWriterCleanupScheduler();
 
         try {
             Path storagePath = Paths.get(storageDirectory);
@@ -52,53 +56,40 @@ public class FileSinkTask extends SinkTask {
         log.info("FileSinkTask started with storage directory: {}", storageDirectory);
     }
 
-    @Override
-    public void put(Collection<SinkRecord> records) {
-        for (SinkRecord record : records) {
-            try {
-                // Parse the record value into a Map
-                Map<String, Object> payload = objectMapper.readValue(record.value().toString(), Map.class);
 
-                // Safely extract the "iotnode" object and cast it to a Map
-                Object iotnodeObj = payload.get("iotnode");
-                if (iotnodeObj instanceof Map) {
-                    Map<String, Object> iotnode = (Map<String, Object>) iotnodeObj;
-
-                    // Safely extract "_id"
-                    String id = (String) iotnode.get("_id");
-                    if (id == null || id.isEmpty()) {
-                        log.warn("Record missing '_id' field in iotnode: {}", iotnode);
-                        continue;
-                    }
-
-                    // Create a folder using the _id
-                    Path folderPath = Paths.get(storageDirectory, id);
-                    Files.createDirectories(folderPath);
-
-                    // Write data to a JSONL file
-                    Path filePath = folderPath.resolve("data.jsonl");
-                    try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath.toFile(), true))) {
-                        String jsonLine = objectMapper.writeValueAsString(payload);
-                        writer.write(jsonLine);
-                        writer.newLine();
-                        writer.flush(); // Ensure data is written immediately
-                    }
-
-                    log.info("Successfully wrote record with _id: {} to {}", id, filePath);
-
-                } else {
-                    log.warn("'iotnode' field is either missing or not a valid Map in payload: {}", payload);
-                }
-
-            } catch (Exception e) {
-                log.error("Failed to process record: {}", record.value(), e);
-            }
-        }
+    public String datePathExtractor(Object timestamp) {
+        ZonedDateTime zdt = ZonedDateTime.parse((String) timestamp);
+        return zdt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
     }
 
 
     @Override
-    public void stop() {
+    public void put(Collection<SinkRecord> records) {
+        records.forEach(record -> {
+            try {
+                Map<String, Object> payload = objectMapper.readValue(record.value().toString(), Map.class);
+                Map<String, Object> iotNode = (Map<String, Object>) payload.get("iotnode");
 
+                Path filePath = Paths.get(
+                        storageDirectory,
+                        (String) iotNode.get("_id")
+                ).resolve(datePathExtractor(iotNode.get("updatedAt")) + ".jsonl");
+
+                try {
+                    writer.writeJsonToFile(filePath, objectMapper.writeValueAsString(payload));
+                } catch (FileNotFoundException e) {
+                    log.warn("Folder not found: {}, Creating folder", filePath.getParent());
+                    Files.createDirectories(filePath.getParent());
+                    writer.writeJsonToFile(filePath, objectMapper.writeValueAsString(payload));
+                }
+            } catch (Exception e) {
+                log.error("Failed to process record: {}", record.value(), e);
+            }
+        });
+    }
+
+    @Override
+    public void stop() {
+        writer.closeWriters();
     }
 }

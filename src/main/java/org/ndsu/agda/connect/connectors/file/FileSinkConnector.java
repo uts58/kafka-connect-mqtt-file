@@ -12,12 +12,11 @@ import java.util.*;
 
 public class FileSinkConnector extends SinkConnector {
     private static final Logger log = LoggerFactory.getLogger(FileSinkConnector.class);
-    private FileSInkConnectorConfig fileSInkConnectorConfig;
     private Map<String, String> configProps;
 
     @Override
     public void start(Map<String, String> map) {
-        fileSInkConnectorConfig = new FileSInkConnectorConfig(map);
+        FileSInkConnectorConfig fileSInkConnectorConfig = new FileSInkConnectorConfig(map);
         this.configProps = Collections.unmodifiableMap(map);
     }
 
@@ -29,12 +28,12 @@ public class FileSinkConnector extends SinkConnector {
     @Override
     public List<Map<String, String>> taskConfigs(int maxTasks) {
         if (maxTasks > 1) {
-            log.info("maxTasks is " + maxTasks + ". MaxTasks > 1 is not supported in this connector.");
+            log.info("maxTasks is {}. MaxTasks > 1 is not supported in this connector.", maxTasks);
         }
         List<Map<String, String>> taskConfigs = new ArrayList<>(1);
         taskConfigs.add(new HashMap<>(configProps));
 
-        log.debug("Taskconfigs: " + taskConfigs);
+        log.debug("Taskconfigs: {}", taskConfigs);
         return taskConfigs;
     }
 
