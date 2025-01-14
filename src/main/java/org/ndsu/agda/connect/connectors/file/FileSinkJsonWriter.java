@@ -33,16 +33,16 @@ public class FileSinkJsonWriter {
 
 
     public void writeJsonToFile(Path filePath, String json) throws IOException {
-        String fileName = filePath.getFileName().toString();
-
+//        String fileName = filePath.getFileName().toString();
+        String filePathStr = filePath.toString();
         WriterEntry entry;
         synchronized (writers) {
-            entry = writers.get(fileName);
+            entry = writers.get(filePathStr);
             if (entry == null) {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(filePath.toFile(), true));
                 entry = new WriterEntry(writer);
-                writers.put(fileName, entry);
-                log.info("Created new writer for {}, current number of writers {}", fileName, writers.size());
+                writers.put(filePathStr, entry);
+                log.info("Created new writer for {}, current number of writers {}", filePathStr, writers.size());
             }
             entry.updateAccessTime();
         }
