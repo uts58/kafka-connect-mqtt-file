@@ -7,7 +7,7 @@
 
     <groupId>org.ndsu.adga</groupId>
     <artifactId>kafka-connect</artifactId>
-    <version>1.1.1</version>
+    <version>1.2.1</version>
     <packaging>jar</packaging>
     <name>kafka.connect</name>
 
@@ -36,7 +36,7 @@
         <!-- MQTT Client -->
         <dependency>
             <groupId>org.eclipse.paho</groupId>
-            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+            <artifactId>org.eclipse.paho.mqttv5.client</artifactId>
             <version>1.2.5</version>
         </dependency>
 

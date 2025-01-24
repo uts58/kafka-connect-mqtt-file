@@ -1,16 +1,21 @@
 package org.ndsu.agda.connect.connectors.mqtt;
 
-import org.ndsu.agda.connect.Version;
-import org.ndsu.agda.connect.config.MQTTSinkConnectorConfig;
-import org.ndsu.agda.connect.config.MQTTSourceConnectorConfig;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTask;
-import org.eclipse.paho.client.mqttv3.*;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.eclipse.paho.mqttv5.client.IMqttClient;
+import org.eclipse.paho.mqttv5.client.MqttClient;
+import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
+import org.eclipse.paho.mqttv5.client.persist.MemoryPersistence;
+import org.eclipse.paho.mqttv5.common.MqttException;
+import org.eclipse.paho.mqttv5.common.MqttMessage;
+import org.ndsu.agda.connect.Version;
+import org.ndsu.agda.connect.config.MQTTSinkConnectorConfig;
+import org.ndsu.agda.connect.config.MQTTSourceConnectorConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -36,28 +41,35 @@ public class MQTTSinkTask extends SinkTask {
         config = new MQTTSinkConnectorConfig(map);
         mqttSinkConverter = new MQTTSinkConverter(config);
         try {
-            mqttClient = new MqttClient(config.getString(MQTTSinkConnectorConfig.BROKER), config.getString(MQTTSinkConnectorConfig.CLIENTID), new MemoryPersistence());
+            mqttClient = new MqttClient(
+                    config.getString(MQTTSinkConnectorConfig.BROKER),
+                    config.getString(MQTTSinkConnectorConfig.CLIENTID),
+                    new MemoryPersistence()
+            );
 
             log.info("Connecting to MQTT Broker " + config.getString(MQTTSourceConnectorConfig.BROKER));
             connect(mqttClient);
             log.info("Connected to MQTT Broker. This connector publishes to the " + this.config.getString(MQTTSinkConnectorConfig.MQTT_TOPIC) + " topic");
 
-        }
-        catch (MqttException e) {
+        } catch (MqttException e) {
             throw new ConnectException(e);
         }
     }
 
-    private void connect(IMqttClient mqttClient) throws MqttException{
-        MqttConnectOptions connOpts = new MqttConnectOptions();
-        connOpts.setCleanSession(config.getBoolean(MQTTSinkConnectorConfig.MQTT_CLEANSESSION));
+    private void connect(IMqttClient mqttClient) throws MqttException {
+        MqttConnectionOptions connOpts = new MqttConnectionOptions();
+        connOpts.setCleanStart(config.getBoolean(MQTTSinkConnectorConfig.MQTT_CLEANSESSION));
         connOpts.setKeepAliveInterval(config.getInt(MQTTSinkConnectorConfig.MQTT_KEEPALIVEINTERVAL));
         connOpts.setConnectionTimeout(config.getInt(MQTTSinkConnectorConfig.MQTT_CONNECTIONTIMEOUT));
         connOpts.setAutomaticReconnect(config.getBoolean(MQTTSinkConnectorConfig.MQTT_ARC));
 
-        if (!config.getString(MQTTSinkConnectorConfig.MQTT_USERNAME).equals("") && !config.getPassword(MQTTSinkConnectorConfig.MQTT_PASSWORD).equals("")) {
-            connOpts.setUserName(config.getString(MQTTSinkConnectorConfig.MQTT_USERNAME));
-            connOpts.setPassword(config.getPassword(MQTTSinkConnectorConfig.MQTT_PASSWORD).value().toCharArray());
+        if (!config.getString(MQTTSourceConnectorConfig.MQTT_USERNAME).isEmpty()
+                && config.getPassword(MQTTSourceConnectorConfig.MQTT_PASSWORD) != null
+                && !config.getPassword(MQTTSourceConnectorConfig.MQTT_PASSWORD).value().isEmpty()) {
+            connOpts.setUserName(config.getString(MQTTSourceConnectorConfig.MQTT_USERNAME));
+            connOpts.setPassword(
+                    config.getPassword(MQTTSourceConnectorConfig.MQTT_PASSWORD).value().getBytes(StandardCharsets.UTF_8)
+            );
         }
 
         log.debug("MQTT Connection properties: " + connOpts);

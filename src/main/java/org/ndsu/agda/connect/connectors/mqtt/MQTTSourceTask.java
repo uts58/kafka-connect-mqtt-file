@@ -3,8 +3,11 @@ package org.ndsu.agda.connect.connectors.mqtt;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
-import org.eclipse.paho.client.mqttv3.*;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.eclipse.paho.mqttv5.client.*;
+import org.eclipse.paho.mqttv5.client.persist.MemoryPersistence;
+import org.eclipse.paho.mqttv5.common.MqttException;
+import org.eclipse.paho.mqttv5.common.MqttMessage;
+import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 import org.ndsu.agda.connect.Version;
 import org.ndsu.agda.connect.config.MQTTSourceConnectorConfig;
 import org.ndsu.agda.connect.utils.SourceRecordDeque;
@@ -12,6 +15,7 @@ import org.ndsu.agda.connect.utils.SourceRecordDequeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -30,21 +34,18 @@ public class MQTTSourceTask extends SourceTask implements IMqttMessageListener {
     public void start(Map<String, String> props) {
         config = new MQTTSourceConnectorConfig(props);
         mqttSourceConverter = new MQTTSourceConverter(config);
-        this.sourceRecordDeque = SourceRecordDequeBuilder.of().batchSize(4096).emptyWaitMs(100).maximumCapacityTimeoutMs(60000).maximumCapacity(50000).build();
+        this.sourceRecordDeque = SourceRecordDequeBuilder.of()
+                .batchSize(4096).emptyWaitMs(100).
+                maximumCapacityTimeoutMs(60000).maximumCapacity(50000).build();
         try {
             String clientId = config.getString(MQTTSourceConnectorConfig.CLIENTID);
             log.info("Connecting with clientID={}", clientId);
             mqttClient = new MqttClient(config.getString(MQTTSourceConnectorConfig.BROKER), clientId, new MemoryPersistence());
-            mqttClient.setCallback(new MqttCallbackExtended() {
-                @Override
-                public void connectComplete(boolean b, String s) {
-                    log.info("MQTT Connection Complete {} -> {}", b, s);
-                    subscribe(mqttClient);
-                }
 
+            mqttClient.setCallback(new MqttCallback() {
                 @Override
-                public void connectionLost(Throwable cause) {
-                    log.error("MQTT Connection Lost", cause);
+                public void disconnected(MqttDisconnectResponse disconnectResponse) {
+                    log.error("MQTT Connection Lost {}", disconnectResponse);
                 }
 
                 @Override
@@ -53,8 +54,24 @@ public class MQTTSourceTask extends SourceTask implements IMqttMessageListener {
                 }
 
                 @Override
-                public void deliveryComplete(IMqttDeliveryToken token) {
+                public void deliveryComplete(IMqttToken token) {
                     log.info("MQTT Delivery Complete{}", token);
+                }
+
+                @Override
+                public void connectComplete(boolean b, String s) {
+                    log.info("MQTT Connection Complete {} -> {}", b, s);
+                    subscribe(mqttClient);
+                }
+
+                @Override
+                public void authPacketArrived(int reasonCode, MqttProperties properties) {
+
+                }
+
+                @Override
+                public void mqttErrorOccurred(MqttException exception) {
+
                 }
             });
 
@@ -98,21 +115,20 @@ public class MQTTSourceTask extends SourceTask implements IMqttMessageListener {
     private void connect(IMqttClient mqttClient) {
         try {
             log.info("Connecting to MQTT Broker {}", config.getString(MQTTSourceConnectorConfig.BROKER));
-            MqttConnectOptions connOpts = new MqttConnectOptions();
-            connOpts.setCleanSession(config.getBoolean(MQTTSourceConnectorConfig.MQTT_CLEANSESSION));
+            MqttConnectionOptions connOpts = new MqttConnectionOptions();
+            connOpts.setCleanStart(config.getBoolean(MQTTSourceConnectorConfig.MQTT_CLEANSESSION));
             connOpts.setKeepAliveInterval(config.getInt(MQTTSourceConnectorConfig.MQTT_KEEPALIVEINTERVAL));
             connOpts.setConnectionTimeout(config.getInt(MQTTSourceConnectorConfig.MQTT_CONNECTIONTIMEOUT));
             connOpts.setAutomaticReconnect(config.getBoolean(MQTTSourceConnectorConfig.MQTT_ARC));
 
-            if (!config.getString(MQTTSourceConnectorConfig.MQTT_USERNAME).equals("") && !config.getPassword(MQTTSourceConnectorConfig.MQTT_PASSWORD).equals("")) {
+            if (!config.getString(MQTTSourceConnectorConfig.MQTT_USERNAME).isEmpty() && config.getPassword(MQTTSourceConnectorConfig.MQTT_PASSWORD) != null && !config.getPassword(MQTTSourceConnectorConfig.MQTT_PASSWORD).value().isEmpty()) {
                 connOpts.setUserName(config.getString(MQTTSourceConnectorConfig.MQTT_USERNAME));
-                connOpts.setPassword(config.getPassword(MQTTSourceConnectorConfig.MQTT_PASSWORD).value().toCharArray());
+                connOpts.setPassword(config.getPassword(MQTTSourceConnectorConfig.MQTT_PASSWORD).value().getBytes(StandardCharsets.UTF_8));
             }
 
             log.info("MQTT Connection properties: {}", connOpts);
             mqttClient.connect(connOpts);
             log.info("Connected to MQTT Broker 1");
-            return;
         } catch (Exception e) {
             log.error("Error establishing connection", e);
             try {

@@ -1,9 +1,9 @@
 package org.ndsu.agda.connect.connectors.mqtt;
 
+import org.apache.kafka.connect.sink.SinkRecord;
+import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.ndsu.agda.connect.config.MQTTSinkConnectorConfig;
 import org.ndsu.agda.connect.config.MQTTSourceConnectorConfig;
-import org.apache.kafka.connect.sink.SinkRecord;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +24,7 @@ public class MQTTSinkConverter {
         log.trace("Converting Kafka message");
 
         MqttMessage mqttMessage = new MqttMessage();
-        mqttMessage.setPayload(((String)sinkRecord.value()).getBytes());
+        mqttMessage.setPayload(((String) sinkRecord.value()).getBytes());
         mqttMessage.setQos(this.mqttSinkConnectorConfig.getInt(MQTTSourceConnectorConfig.MQTT_QOS));
         log.trace("Result MQTTMessage: " + mqttMessage);
         return mqttMessage;

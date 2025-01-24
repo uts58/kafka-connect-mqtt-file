@@ -1,9 +1,9 @@
 package org.ndsu.agda.connect.connectors.mqtt;
 
-import org.ndsu.agda.connect.config.MQTTSourceConnectorConfig;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.source.SourceRecord;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.mqttv5.common.MqttMessage;
+import org.ndsu.agda.connect.config.MQTTSourceConnectorConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
