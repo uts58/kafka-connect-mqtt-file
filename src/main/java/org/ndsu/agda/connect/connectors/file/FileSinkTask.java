@@ -73,7 +73,7 @@ public class FileSinkTask extends SinkTask {
                 Path filePath = Paths.get(
                         storageDirectory,
                         (String) iotNode.get("_id")
-                ).resolve(datePathExtractor(iotNode.get("updatedAt")) + ".jsonl");
+                ).resolve(datePathExtractor(iotNode.get("reportedAt")) + ".jsonl");
 
                 try {
                     writer.writeJsonToFile(filePath, objectMapper.writeValueAsString(payload));
