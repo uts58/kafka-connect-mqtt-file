@@ -39,7 +39,7 @@ You must have Kafka 2+ installed
 
 ### Installing
 
-* Copy the file `/target/kafka-connect-mqtt-1.1.0.jar` to your Kafka Connect plugin path
+* Copy the file `/target/kafka-connect-mqtt-<version>.jar` to your Kafka Connect plugin path
 * Restart Kafka Connect
 * Check if the connector has been loaded succesfully
 
@@ -52,17 +52,17 @@ If you see these entries, the connector has been installed succesfully
 {
     "class": "org.ndsu.agda.connect.connectors.mqtt.MQTTSinkConnector",
     "type": "sink",
-    "version": "1.1.0"
+    "version": "<version>"
 },
 {
     "class": "org.ndsu.agda.connect.connectors.mqtt.MQTTSourceConnector",
     "type": "source",
-    "version": "1.1.0"
+    "version": "<version>"
 },
 {
     "class": "org.ndsu.agda.connect.connectors.mqtt.FileSinkConnector",
     "type": "source",
-    "version": "1.1.0"
+    "version": "<version>"
 }
 ```
 
@@ -114,6 +114,7 @@ curl -X POST \
       "connector.class":"org.ndsu.agda.connect.connectors.mqtt.MQTTSinkConnector",
       "mqtt.topic":"my_mqtt_topic",
       "topics":"my_kafka_topic",
+      "mqtt.qos": 2,
       "mqtt.clientID":"my_client_id",
       "mqtt.broker":"tcp://127.0.0.1:1883",
       "key.converter":"org.apache.kafka.connect.storage.StringConverter",
