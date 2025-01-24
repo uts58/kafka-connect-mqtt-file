@@ -4,8 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Iterator;
@@ -31,9 +33,17 @@ public class FileSinkJsonWriter {
         }
     }
 
+    public void write(Path filePath, String json) throws IOException {
+        try {
+            writeJsonToFile(filePath, json);
+        } catch (FileNotFoundException e) {
+            log.warn("Folder not found: {}, Creating folder", filePath.getParent());
+            Files.createDirectories(filePath.getParent());
+            writeJsonToFile(filePath, json);
+        }
+    }
 
     public void writeJsonToFile(Path filePath, String json) throws IOException {
-//        String fileName = filePath.getFileName().toString();
         String filePathStr = filePath.toString();
         WriterEntry entry;
         synchronized (writers) {

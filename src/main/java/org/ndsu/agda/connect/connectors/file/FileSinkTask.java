@@ -24,7 +24,7 @@ public class FileSinkTask extends SinkTask {
     private String storageDirectory;
     private ObjectMapper objectMapper;
     FileSinkJsonWriter writer;
-
+    private final String failedDataDirName = "failedData";
 
     @Override
     public String version() {
@@ -40,7 +40,7 @@ public class FileSinkTask extends SinkTask {
         writer.startWriterCleanupScheduler();
 
         try {
-            Path storagePath = Paths.get(storageDirectory);
+            Path storagePath = Paths.get(storageDirectory, failedDataDirName);
             if (Files.exists(storagePath)) {
                 log.info("Storage directory exists: {}", storageDirectory);
             } else {
@@ -67,22 +67,26 @@ public class FileSinkTask extends SinkTask {
     public void put(Collection<SinkRecord> records) {
         records.forEach(record -> {
             try {
-                Map<String, Object> payload = objectMapper.readValue(record.value().toString(), Map.class);
+                String json = objectMapper.writeValueAsString(record);
+                Map<String, Object> payload = objectMapper.readValue(json, Map.class);
                 Map<String, Object> iotNode = (Map<String, Object>) payload.get("iotnode");
 
                 Path filePath = Paths.get(
                         storageDirectory,
                         (String) iotNode.get("_id")
                 ).resolve(datePathExtractor(iotNode.get("reportedAt")) + ".jsonl");
+                writer.write(filePath, json);
+
+            } catch (Exception e) {
+                Path filePath = Paths.get(storageDirectory, failedDataDirName)
+                        .resolve("failedData.txt");
 
                 try {
-                    writer.writeJsonToFile(filePath, objectMapper.writeValueAsString(payload));
-                } catch (FileNotFoundException e) {
-                    log.warn("Folder not found: {}, Creating folder", filePath.getParent());
-                    Files.createDirectories(filePath.getParent());
-                    writer.writeJsonToFile(filePath, objectMapper.writeValueAsString(payload));
+                    writer.write(filePath, (String) record.value());
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
                 }
-            } catch (Exception e) {
+
                 log.error("Failed to process record: {}", record.value(), e);
             }
         });
