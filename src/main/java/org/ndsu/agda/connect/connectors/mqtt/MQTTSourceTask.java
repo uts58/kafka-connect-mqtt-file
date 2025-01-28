@@ -59,8 +59,8 @@ public class MQTTSourceTask extends SourceTask implements IMqttMessageListener {
                 }
 
                 @Override
-                public void connectComplete(boolean b, String s) {
-                    log.info("MQTT Connection Complete {} -> {}", b, s);
+                public void connectComplete(boolean reconnect, String serverURI) {
+                    log.info("MQTT Connection Complete");
                     subscribe(mqttClient);
                 }
 
@@ -71,7 +71,7 @@ public class MQTTSourceTask extends SourceTask implements IMqttMessageListener {
 
                 @Override
                 public void mqttErrorOccurred(MqttException exception) {
-
+                    log.error("An MQTT error occurred", exception);
                 }
             });
 
@@ -97,11 +97,9 @@ public class MQTTSourceTask extends SourceTask implements IMqttMessageListener {
             int qosLevel = this.config.getInt(MQTTSourceConnectorConfig.MQTT_QOS);
 
             log.info("Subscribing to {} with QOS {}", topicSubscription, qosLevel);
-            mqttClient.subscribe(topicSubscription, qosLevel, (topic, message) -> {
-                onMessageReceived("subscribeCallback", topic, message);
-            });
+            //freaking callback function doesn't work here for mqttv5... I spent 3 days to figure it out, guess I'm dumb :|
+            mqttClient.subscribe(topicSubscription, qosLevel);
             log.info("Subscribed to {} with QOS {}", topicSubscription, qosLevel);
-            return;
         } catch (Exception e) {
             log.error("Error subscribing to topic {}", topicSubscription, e);
             try {
@@ -128,7 +126,7 @@ public class MQTTSourceTask extends SourceTask implements IMqttMessageListener {
 
             log.info("MQTT Connection properties: {}", connOpts);
             mqttClient.connect(connOpts);
-            log.info("Connected to MQTT Broker 1");
+            log.info("Connected to MQTT Broker {}", config.getString(MQTTSourceConnectorConfig.BROKER));
         } catch (Exception e) {
             log.error("Error establishing connection", e);
             try {
@@ -164,7 +162,6 @@ public class MQTTSourceTask extends SourceTask implements IMqttMessageListener {
     public String version() {
         return Version.getVersion();
     }
-
 
     /**
      * Callback method when a MQTT message arrives at the Topic
