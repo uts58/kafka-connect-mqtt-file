@@ -67,8 +67,8 @@ public class FileSinkTask extends SinkTask {
     public void put(Collection<SinkRecord> records) {
         records.forEach(record -> {
             try {
-                String json = objectMapper.writeValueAsString(record);
-                Map<String, Object> payload = objectMapper.readValue(json, Map.class);
+                String json = record.value().toString();
+                Map<String, Object> payload = objectMapper.readValue(record.value().toString(), Map.class);
                 Map<String, Object> iotNode = (Map<String, Object>) payload.get("iotnode");
 
                 Path filePath = Paths.get(
@@ -78,10 +78,9 @@ public class FileSinkTask extends SinkTask {
                 writer.write(filePath, json);
 
             } catch (Exception e) {
-                Path filePath = Paths.get(storageDirectory, failedDataDirName)
-                        .resolve("failedData.txt");
-
                 try {
+                    Path filePath = Paths.get(storageDirectory, failedDataDirName)
+                            .resolve("failedData.txt");
                     writer.write(filePath, (String) record.value());
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
