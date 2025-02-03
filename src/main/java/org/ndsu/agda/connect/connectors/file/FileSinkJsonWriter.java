@@ -1,5 +1,6 @@
 package org.ndsu.agda.connect.connectors.file;
 
+import org.apache.kafka.connect.errors.ConnectException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,13 +34,17 @@ public class FileSinkJsonWriter {
         }
     }
 
-    public void write(Path filePath, String json) throws IOException {
+    public void write(Path filePath, String json) {
         try {
-            writeJsonToFile(filePath, json);
-        } catch (FileNotFoundException e) {
-            log.warn("Folder not found: {}, Creating folder", filePath.getParent());
-            Files.createDirectories(filePath.getParent());
-            writeJsonToFile(filePath, json);
+            try {
+                writeJsonToFile(filePath, json);
+            } catch (FileNotFoundException e) {
+                log.warn("Folder not found: {}, Creating folder", filePath.getParent());
+                Files.createDirectories(filePath.getParent());
+                writeJsonToFile(filePath, json);
+            }
+        } catch (IOException e) {
+            log.error("Error writing to file: {}, Error: {}", filePath, e.getMessage());
         }
     }
 
@@ -75,13 +80,12 @@ public class FileSinkJsonWriter {
                 Map.Entry<String, WriterEntry> entry = iterator.next();
                 WriterEntry writerEntry = entry.getValue();
 
-
                 if (now.toEpochMilli() - writerEntry.lastAccessTime.toEpochMilli() > WRITER_TIMEOUT_MILLIS) {
                     try {
                         writerEntry.writer.close();
                         log.info("Closed inactive writer for file: {}", entry.getKey());
                     } catch (IOException e) {
-                        log.error("Failed to close inactive writer for file: {}", entry.getKey(), e);
+                        log.error("Failed to close inactive writer for file: {}", entry.getKey());
                     }
                     iterator.remove();
                 }
