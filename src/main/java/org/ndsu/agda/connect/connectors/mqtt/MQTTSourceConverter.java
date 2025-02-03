@@ -18,36 +18,40 @@ import java.util.Map;
  */
 public class MQTTSourceConverter {
 
-    private MQTTSourceConnectorConfig mqttSourceConnectorConfig;
-
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final Logger log = LoggerFactory.getLogger(MQTTSourceConverter.class);
+    private final String KAFKA_TOPIC;
 
     public MQTTSourceConverter(MQTTSourceConnectorConfig mqttSourceConnectorConfig) {
-        this.mqttSourceConnectorConfig = mqttSourceConnectorConfig;
+        this.KAFKA_TOPIC = mqttSourceConnectorConfig.getString(MQTTSourceConnectorConfig.KAFKA_TOPIC);
     }
 
     protected SourceRecord convert(String topic, MqttMessage mqttMessage) {
         log.debug("Converting MQTT message: {}", mqttMessage);
 
-        String payload = new String(mqttMessage.getPayload());
-
-        // Create an ObjectMapper instance (you might want to reuse a singleton instance in production)
-        ObjectMapper mapper = new ObjectMapper();
+        String payload = new String(mqttMessage.getPayload(), java.nio.charset.StandardCharsets.UTF_8);
         Map<String, Object> jsonMap;
 
         try {
-            jsonMap = mapper.readValue(payload, new TypeReference<Map<String, Object>>() {
+            jsonMap = OBJECT_MAPPER.readValue(payload, new TypeReference<Map<String, Object>>() {
             });
+            if (jsonMap.containsKey("iotnode")) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> iotNode = (Map<String, Object>) jsonMap.get("iotnode");
+                if (iotNode.containsKey("reportedAt")) {
+                    String reportedAtStr = (String) iotNode.get("reportedAt");
+                    jsonMap.put("reportedAt", reportedAtStr);
+                }
+            }
         } catch (IOException e) {
             log.error("Failed to parse JSON payload, passing raw payload in a wrapper", e);
-            // In case of parsing error, you can choose to wrap the raw payload in a Map
             jsonMap = Collections.singletonMap("raw", payload);
         }
 
         SourceRecord sourceRecord = new SourceRecord(
                 new HashMap<>(),  // source partition
                 new HashMap<>(),  // source offset
-                this.mqttSourceConnectorConfig.getString(MQTTSourceConnectorConfig.KAFKA_TOPIC),
+                this.KAFKA_TOPIC,
                 null,           // null schema: using schemaless mode
                 jsonMap         // structured JSON object as value
         );
