@@ -20,11 +20,11 @@ To build the connector, you must have the following installed:
 
 Clone the repository with the following command:
 ```
-git clone https://github.com/uts58/kafka-connect-mqtt.git
+git clone https://github.com/uts58/kafka-connect-mqtt-file.git
 ```
-Change directory into the `kafka-connect-mqtt` directory
+Change directory into the `kafka-connect-mqtt-file` directory
 ```
-cd kafka-connect-mqtt
+cd kafka-connect-mqtt-file
 ```
 Build the connector fat jar using Maven
 ```
@@ -49,11 +49,6 @@ http://<kafkaconnect>:8083/connector-plugins
 If you see these entries, the connector has been installed succesfully
 
 ```
-{
-    "class": "org.ndsu.agda.connect.connectors.mqtt.MQTTSinkConnector",
-    "type": "sink",
-    "version": "<version>"
-},
 {
     "class": "org.ndsu.agda.connect.connectors.mqtt.MQTTSourceConnector",
     "type": "source",
@@ -98,42 +93,6 @@ curl -X POST \
 * `mqtt.connectionTimeout` (optional)(default: 30 seconds)
 * `mqtt.userName` (optional): Username to connect to MQTT broker
 * `mqtt.password` (optional): Password to connect to MQTT broker
-
-## Configuring the MQTT Sink connector
-
-The MQTT Sink Connector reads messages from a Kafka topic and publishes them to a MQTT topic.
-
-Here is a basic configuration example:
-```
-curl -X POST \
-  http://<kafkaconnect>>:8083/connectors \
-  -H 'Content-Type: application/json' \
-  -d '{ "name": "mqtt-sink-connector",
-    "config":
-    {
-      "connector.class":"org.ndsu.agda.connect.connectors.mqtt.MQTTSinkConnector",
-      "mqtt.topic":"my_mqtt_topic",
-      "topics":"my_kafka_topic",
-      "mqtt.qos": 2,
-      "mqtt.clientID":"my_client_id",
-      "mqtt.broker":"tcp://127.0.0.1:1883",
-      "key.converter":"org.apache.kafka.connect.storage.StringConverter",
-      "key.converter.schemas.enable":false,
-      "value.converter":"org.apache.kafka.connect.storage.StringConverter",
-      "value.converter.schemas.enable":false
-    }
-}'
-```
-
-### Optional Configuration options
-* `mqtt.qos` (optional): 0 – At most Once, 1 – At Least Once, 2 – Exactly Once
-* `mqtt.automaticReconnect` (optional)(default: true): Should the client automatically reconnect in case of connection failures
-* `mqtt.keepAliveInterval` (optional)(default: 60 seconds)
-* `mqtt.cleanSession` (optional)(default: true): Controls the state after disconnecting the client from the broker.
-* `mqtt.connectionTimeout` (optional)(default: 30 seconds)
-* `mqtt.userName` (optional): Username to connect to MQTT broker
-* `mqtt.password` (optional): Password to connect to MQTT broker
-
 
 ## Configuring the File Sink connector
 

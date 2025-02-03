@@ -1,6 +1,5 @@
 package org.ndsu.agda.connect.connectors.file;
 
-import org.apache.kafka.connect.errors.ConnectException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,14 +36,16 @@ public class MQTTSourceConverter {
         try {
             jsonMap = OBJECT_MAPPER.readValue(payload, new TypeReference<Map<String, Object>>() {
             });
+            jsonMap.put("mqttReceivedAt", Instant.now().toString());
+
             if (jsonMap.containsKey("iotnode")) {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> iotNode = (Map<String, Object>) jsonMap.get("iotnode");
                 if (iotNode.containsKey("reportedAt")) {
-                    String reportedAtStr = (String) iotNode.get("reportedAt");
-                    jsonMap.put("reportedAt", reportedAtStr);
+                    jsonMap.put("baseReportedAt", iotNode.get("reportedAt").toString());
                 }
             }
+
         } catch (IOException e) {
             log.error("Failed to parse JSON payload, passing raw payload in a wrapper", e);
             jsonMap = Collections.singletonMap("raw", payload);
